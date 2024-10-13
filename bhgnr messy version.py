@@ -49,7 +49,7 @@ score_displays.pack()
 
 edosh_image = PhotoImage(file="players/edoshearless.gif")
 mychar = canvas.create_image(canvas_width/2, canvas_height/2, image = edosh_image, state=NORMAL)
-char_speed = 10
+char_speed = 2
 char_movement = False
 
 coin_list = []
@@ -60,7 +60,7 @@ cduud_list = []
 boss_list = []
 kunai_list = []
 osh_list = []
-coin_speed = 0.05#this may look slow but the frame rate is high on the coins
+coin_speed = 2 #this may look slow but the frame rate is high on the coins
 bot_img=PhotoImage(file='enemies/bot.gif')
 bernard_img=PhotoImage(file='enemies/bernardosh.gif')
 pduud_img=PhotoImage(file='enemies/pduud.gif')
@@ -72,71 +72,70 @@ drain=False #drain is on when the character gets hit by duud
 end_the_game=False #what do you think will happen
 
 def make_coin():
-    xposition = random.randint(32,768)
-    coin = canvas.create_oval(xposition, -30, xposition+30, 0, width=3, fill='yellow', outline='red')
+    xposition = random.randint(0,canvas_width)
+    coin = canvas.create_oval(xposition, -32, xposition+32, 0, width=4, fill='yellow', outline='red')
     coin_list.append(coin)
     window.after(1000, make_coin)
 def make_osh():
-    xposition = random.randint(32,768)
-    osh = canvas.create_image(xposition, -30, image=osh_img)
+    xposition = random.randint(0,canvas_width)
+    osh = canvas.create_image(xposition, -32, image=osh_img)
     osh_list.append(osh)        
     window.after(2000, make_osh)
 def move_coin():
     for coin in coin_list:
         canvas.move(coin, 0, coin_speed)
-        if canvas.coords(coin)[1] > 600:
-            xposition = random.randint(32,768)
-            canvas.coords(coin, xposition, 0, xposition+30,30)
-    for osh in osh_list:
-        canvas.move(osh, 0, 1)
+        if canvas.coords(coin)[1] > canvas_height:
+            xposition = random.randint(0,canvas_width)
+            canvas.coords(coin, xposition, 0, xposition+32,32)
     window.after(1, move_coin)
+    
 def move_osh():
     for osh in osh_list:
-        canvas.move(osh, 0, 2)
-        if canvas.coords(osh)[1] > 600:
+        canvas.move(osh, 0, 1)
+        if canvas.coords(osh)[1] > canvas_height:
             canvas.delete(osh)
             osh_list.remove(osh)
-    window.after(10,move_osh)
+    window.after(1,move_osh)
 def move_enemies():
     for bot in duud_bot_list:
         (playerx, playery) = canvas.coords(mychar)
         (botx, boty) = canvas.coords(bot)
         if botx > playerx:
-            canvas.move(bot, -4,0)
+            canvas.move(bot, -0.5,0)
         if botx < playerx:
-            canvas.move(bot, 4, 0)
+            canvas.move(bot, 0.5, 0)
         if boty > playery:
-            canvas.move(bot, 0,-4)
+            canvas.move(bot, 0,-0.5)
         if boty < playery:
-            canvas.move(bot, 0, 4)
-        if canvas.coords(bot)[1] > 600:
+            canvas.move(bot, 0, 0.5)
+        if canvas.coords(bot)[1] > canvas_height:
             canvas.delete(bot)
     for ber in bernard_osh_list:
-        canvas.move(ber, random.randint(-10,10), 5)
-        if canvas.coords(ber)[1] > 600:
+        canvas.move(ber, random.randint(-1,1), 1.5)
+        if canvas.coords(ber)[1] > canvas_height:
             canvas.delete(ber)
             bernard_osh_list.remove(ber)
     for pduud in pduud_list:
-        canvas.move(pduud, random.randint(-10,10), 10)
-        if canvas.coords(pduud)[1] > 600:
+        canvas.move(pduud, random.randint(-1,1), 1.5)
+        if canvas.coords(pduud)[1] > canvas_height:
             canvas.delete(pduud)
             pduud_list.remove(pduud)
     for cduud in cduud_list:
-        canvas.move(cduud, random.randint(-10,10), 10)
-        if canvas.coords(cduud)[1] > 600:
+        canvas.move(cduud, random.randint(-1,1), 1.5)
+        if canvas.coords(cduud)[1] > canvas_height:
             canvas.delete(cduud)
             cduud_list.remove(cduud)
     for kunai in kunai_list:
-        canvas.move(kunai, random.randint(-10,10), -15)#kunai comes from the bottom
+        canvas.move(kunai, random.randint(-1,1), -1.5)#kunai comes from the bottom
         if canvas.coords(kunai)[1] < 0:
             canvas.delete(kunai)
             kunai_list.remove(kunai)
     for boss in boss_list:
-        canvas.move(boss, random.randint(-10,10), 15)
-        if canvas.coords(boss)[1] > 600:
+        canvas.move(boss, random.randint(-1,1), 2)
+        if canvas.coords(boss)[1] > canvas_height:
             canvas.delete(boss)
             boss_list.remove(boss)
-    window.after(50, move_enemies)
+    window.after(1, move_enemies)
         
 def update_time():
     global time
@@ -150,14 +149,14 @@ make functions to create enemies
 def create_enemy(enemy_type, times, x=None, y=None):
     for i in range(times):#If no parameters for x and y, they will be random
         if not x:                
-            xposition = random.randint(0,800)
+            xposition = random.randint(0,canvas_width)
         else:
             xposition = x
         if not y:
             if enemy_type == 'kunai':
-               yposition = random.randint(600, 1200)
+               yposition = random.randint(canvas_height, canvas_height*2)
             else:
-                yposition = random.randint(-600, 0)
+                yposition = random.randint(-canvas_height, 0)
         else:
             yposition = y
         if enemy_type == 'bot':
@@ -181,15 +180,16 @@ def create_enemy(enemy_type, times, x=None, y=None):
 
 ''''''
 def update_score_level():#every time the player scores a point, the program has to check it and then it will execute everything in this function
-    global score, level, coin_speed, x, y, health
+    global score, level, health
     score = score + 1
     if health <= 15 and health > 0:
         health = health+1
         if health > 15:
             health = 15
-    coin_speed = coin_speed + 0.01
     if score >= 1 and score <= 10:
         if level != 1:
+            canvas.delete(title)
+            canvas.delete(directions)
             level = 1
             create_enemy('bot', 16)
             canvas.itemconfigure(game_bg, image=level1bg)
@@ -257,13 +257,6 @@ def end_game_over():
     char_speed = 0
     end_the_game = True
 
-    
-def end_title():
-    if level == 1:
-        canvas.delete(title)
-        canvas.delete(directions)
-    window.after(1000,end_title)
-
 def end_whole_game():
     global kunai_list, boss_list, cduud_list, pduud_list, bernard_osh_list, duud_bot_list,\
            osh_list, coin_list, char_speed
@@ -276,19 +269,18 @@ def end_whole_game():
         duud_bot_list=[]
         osh_list=[]
         coin_list=[]
-    window.after(1,end_whole_game)
+    window.after(1, end_whole_game)
 
 def collision(item1, item2, distance):
-    try:
-        xdistance = abs(canvas.coords(item1)[0] - canvas.coords(item2)[0])
-        ydistance = abs(canvas.coords(item1)[1] - canvas.coords(item2)[1])
-        overlap = xdistance < distance and ydistance < distance
-        return overlap
-    except:#don't know why i have to add this
-        pass
+    xdistance = abs(canvas.coords(item1)[0] - canvas.coords(item2)[0])
+    ydistance = abs(canvas.coords(item1)[1] - canvas.coords(item2)[1])
+    overlap = xdistance < distance and ydistance < distance
+    return overlap
+
 def stop_not_moving():
     global char_speed
-    char_speed = 10
+    char_speed = 2
+    
 def stop_hiding():
     canvas.itemconfigure(mychar, state=NORMAL)
 
@@ -304,12 +296,12 @@ def check_hits():
     if health < 0:
         health = 0
     if health < 1:
-        game_over = canvas.create_text(200, 200, text= 'Game Over', fill='red', font = ('Consolas', 30))
-        window.after(2048, end_game_over)
+        game_over = canvas.create_text(canvas.coords(mychar)[0], canvas.coords(mychar)[1], text= 'Game Over', fill='red', font = ('Consolas', 30))
+        end_game_over()
     for boss in boss_list:
         (boss_x, boss_y) = canvas.coords(boss)
         if collision(mychar, boss, 384):#the duud boss will only shoot in a 384 radius
-            for i in range(random.randint(1,5)):
+            if randrange(16) == 0:
                 create_enemy('bot', 1, boss_x-128, boss_y)
         if collision(mychar, boss, 128):#the duud boss will attack edosh in a 128 radius
             canvas.delete(boss)
@@ -387,13 +379,13 @@ def check_input(event):
         start_game = True
 
 def move_back():
-    if canvas.coords(mychar)[0] > 800:
+    if canvas.coords(mychar)[0] > canvas_width:
         canvas.move(mychar, -12,0)
     elif canvas.coords(mychar)[0] < 0 :
         canvas.move(mychar, 12,0)
     elif canvas.coords(mychar)[1] < 0:
         canvas.move(mychar, 0,12)
-    elif canvas.coords(mychar)[1] > 600 :
+    elif canvas.coords(mychar)[1] > canvas_height :
         canvas.move(mychar, 0,-12)
     window.after(1, move_back)
     
@@ -406,22 +398,21 @@ canvas.bind_all('<KeyPress>', check_input)
 canvas.bind_all('<KeyRelease>', end_input)
 
 def move_character():
-    if move_direction == "Right" and canvas.coords(mychar)[0] < 800:
+    if move_direction == "Right" and canvas.coords(mychar)[0] < canvas_width:
         canvas.move(mychar, char_speed,0)
     elif move_direction == "Left" and canvas.coords(mychar)[0] > 0 :
         canvas.move(mychar, -char_speed,0)
     elif move_direction == "Up" and canvas.coords(mychar)[1] > 0:
         canvas.move(mychar, 0,-char_speed)
-    elif move_direction == "Down" and canvas.coords(mychar)[1] < 600 :
+    elif move_direction == "Down" and canvas.coords(mychar)[1] < canvas_height :
         canvas.move(mychar, 0,char_speed)
-    window.after(16, move_character)
+    window.after(1, move_character)
 
 def check_if_game_started():
     if not start_game:
         window.after(1, check_if_game_started)#it has to loop this function so it constantly checks if the player wants to start the game
     if start_game:#if it made sure the player started the game, it stops looping
         canvas.delete(press_to_start)
-        window.after(1000, end_title)
         window.after(1000, make_coin)
         window.after(1000, move_coin)
         window.after(1000, make_osh)
@@ -434,6 +425,6 @@ def check_if_game_started():
         window.after(1000, drain_health)
         window.after(1000, end_whole_game)
         
-window.after(1000, check_if_game_started)
-window.after(1000, move_character)
+check_if_game_started()
+move_character()
 window.mainloop()
